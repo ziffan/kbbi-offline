@@ -1,0 +1,1 @@
+TFHelp = class; PFHelp = TFHelp;
