@@ -149,7 +149,7 @@ const JenisKata : array[1..49] of string =
     'min','n min','jw n','n sas','hid','a ki','far','ark kl','tan','lay',
     'geo','isl','kris','tern','jw','antr','ek','kl');
 
-VERSI = '1.4';
+VERSI = '1.5 alpha';
 SZ_WORD = 344889; // 1.3 = 345215; // 1.2: 345290; // v1.1 : 318201;
 SZ_DEF = 3065456; // 1.3 = 3060838; // 1.2: 3060990; // 2996209;
 
@@ -178,6 +178,7 @@ SZ_DEF = 3065456; // 1.3 = 3060838; // 1.2: 3060990; // 2996209;
 
 
   1.5 TO DO
+      * Perbaikan error ketika klik bagian kosong kata utama/tambahan
       ? Hasil didaftar yg kurang akurat, misal Pecundang -> Cundang [1]
       * Penambahan jenis-kata dari panduan singkatan
       + Penambahan (database) kata oleh pengguna
@@ -626,6 +627,7 @@ end;
 procedure TFMain.lbKataSelChange(Sender: PObj);
 begin
 //   try
+    if lbKata.CurIndex = -1 then Exit;
       TampilkanDef(lbKata.Items[lbKata.CurIndex]);
       lbAdd.CurIndex := -1;
 //   except
@@ -637,6 +639,7 @@ end;
 
 procedure TFMain.lbAddSelChange(Sender: PObj);
 begin
+  if lbAdd.CurIndex = -1 then Exit;
   TampilkanDef(lbAdd.Items[lbAdd.CurIndex]);
   lbKata.CurIndex := -1;
 end;
