@@ -1,0 +1,1 @@
+TFMain = class; PFMain = TFMain;
