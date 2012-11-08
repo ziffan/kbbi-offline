@@ -1,1 +1,0 @@
-TFSetting = class; PFSetting = TFSetting;

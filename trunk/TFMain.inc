@@ -1,1 +1,0 @@
-TFMain = class(TObj)
