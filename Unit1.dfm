@@ -296,11 +296,6 @@ object FMain: TFMain
       TabStop = True
       Options = [coReadOnly, coNoIntegralHeight]
       OnChange = cbKriteriaChange
-      Items.Strings = (
-        'Diawali'
-        'Diakhiri'
-        'Sama'
-        'Memuat')
       CurIndex = 0
       DroppedWidth = 0
       OnKeyDown = cbKriteriaKeyDown

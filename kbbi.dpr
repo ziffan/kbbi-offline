@@ -2,12 +2,13 @@
 program kbbi;
 
 uses
-KOL,
+  KOL,
   Unit1 in 'Unit1.pas' {FMain},
   DIUclStreams in 'ucl\DIUclStreams.pas',
   UPosX in 'UPosX.pas',
   USetting in 'USetting.pas' {FSetting},
-  UHelp in 'UHelp.pas' {FHelp};
+  UHelp in 'UHelp.pas' {FHelp},
+  RegExpr in 'RegExpr.pas';
 
 {$R *.res}
 

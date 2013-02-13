@@ -9,7 +9,7 @@ interface
 {$IFDEF KOL_MCK}
 uses Windows, Messages, KOL {$IF Defined(KOL_MCK)}{$ELSE}, mirror, Classes,
  Controls, mckCtrls, mckObjs, Graphics {$IFEND (place your units here->)}
- ,ShellAPI,DIUclStreams,UPosX, SHFolder, err;
+ ,ShellAPI,DIUclStreams,UPosX, SHFolder, err, RegExpr;
 {$ELSE}
 {$I uses.inc}
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
@@ -17,7 +17,7 @@ uses Windows, Messages, KOL {$IF Defined(KOL_MCK)}{$ELSE}, mirror, Classes,
 {$ENDIF}
 
 type
-  TKriteriaCari = (kcMemuat,kcSama,kcDiakhiri,kcDiawali);
+  TKriteriaCari = (kcMemuat,kcSama,kcDiakhiri,kcDiawali,kcRegex);
   TListWord = packed record
     x : Integer;
     kata : string;
@@ -119,6 +119,13 @@ type
     //function CariKata(const kata : string) : Boolean;
     procedure CariKata(const kata : string);
     procedure CariArti(const arti : string);
+
+    function CariDgRegex(kata: string; const regex : TRegExpr) : Integer;
+    // Mencari kata dengan regular expresion
+    // kata akan diubah ke StringList dan diparsing mulai idx=0
+    // hasil adalah index di kata ke berapa ditemukan mulai dari 1
+    // jika tidak ditemukan, return value = -1
+
     procedure TampilkanDef(kata :string);
     procedure ReadSettings;
     procedure SaveFormPosition;
@@ -183,6 +190,7 @@ SZ_DEF = 3065456; // 1.3 = 3060838; // 1.2: 3060990; // 2996209;
       * Penambahan jenis-kata dari panduan singkatan
       + Penambahan (database) kata oleh pengguna
       + Menu informasi singkatan yg lebih informatif
+      + Regular Expression searching
 
 }
 
@@ -429,6 +437,12 @@ begin
   LblEf1.Caption := 'Download, update dan informasi terbaru, kunjungi';
   LblEf2.Caption := 'http://ebsoft.web.id';
   LabelEffect1.Caption := 'Kamus Besar Bahasa Indonesia Luar Jaringan (Luring)';
+  cbKriteria.Clear;
+  cbKriteria.Add('Diawali');
+  cbKriteria.Add('Diakhiri');
+  cbKriteria.Add('Sama');
+  cbKriteria.Add('Memuat');
+  cbKriteria.Add('RegEx');
 
   LblEf1.Left := (form.Width - ( lblef1.Width + lblef2.Width )) div 2;
   LblEf2.Left := LblEf1.Left + LblEf1.Width + 3;
@@ -793,14 +807,15 @@ end;
 procedure TFMain.CariKata(const kata: string);
 var
   i,k,m,n : Integer;
-  //start :DWORD;
+  start :DWORD;
   s,sk,sd : KOLstring;
   pCari : PAnsiChar;
+  re : TRegExpr;
 begin
   hasil_main.Clear;
   hasil_add.Clear;
   hasil_all.Clear;
-  //start := GetTickCount;
+  start := GetTickCount;
   //j:=0; {Jumlah hasil_main ditemukan}
   //t:=0; {Jumlah hasil yang PosFastcodeRTL() = 1}
 
@@ -810,8 +825,13 @@ begin
   if cbKriteria.Text = 'Diawali' then KriteriaCari := kcDiawali else
   if cbKriteria.Text = 'Diakhiri' then KriteriaCari := kcDiakhiri else
   if cbKriteria.Text = 'Sama' then KriteriaCari := kcSama else
-  KriteriaCari := kcMemuat;
-
+  if cbKriteria.Text = 'Memuat' then KriteriaCari := kcMemuat else
+  if cbKriteria.Text = 'RegEx' then
+  begin
+    KriteriaCari := kcRegex;
+    re := TRegExpr.Create;
+    re.Expression := kata;
+  end;  
   
   { Yang dicari 1 huruf saja }
   if Length(cari) = 1 then
@@ -827,11 +847,15 @@ begin
   { Mulai Pencarian word_list }
   for i:=0 to word_list.Count-1 do
   begin
-    //s := word_list.Items[i];
-    m := Pos2(pCari,word_list.ItemPtrs[i]);
+    s := word_list.ItemPtrs[i];
+    if KriteriaCari = kcRegex then
+      //m := 1
+      m := CariDgRegex(s,re)
+    else
+      m := Pos2(pCari,word_list.ItemPtrs[i]);
+      
     if m > 0 then
     begin
-      s := word_list.ItemPtrs[i];
       { cari batas terakhir word_list pertama }
       k := PosFastcodeRTL('|',s);
       { !!PENTING... semua string harus ada pembatas akhir "|" }
@@ -839,12 +863,22 @@ begin
       if k > 0 then
         sk := Copy(s,1,k-1);
 
-      { sd : string kata dasar }
       sd := sk;
+//      if KriteriaCari = kcRegex then
+//      begin
+//        reText := MyStrReplace(s,'|',' ');
+//        if re.Exec(reText) then
+//          m := re.MatchPos[0]
+//        else
+//          Continue;
+//      end;  
+
+
       n := PosFastcodeRTL('^',sk);
       { ubah tanda ^N jika ada }
       if n > 0 then
       begin
+        { sd : string kata dasar }
         sd := Copy(sd,1,n-1);
         StrReplace(sk,'^',' [');
         sk := sk+']';
@@ -860,7 +894,7 @@ begin
         kcDiawali : if m = 1 then hasil_all.Add(sk);
         kcDiakhiri : if k = (m + Length(cari)) then hasil_all.Add(sk);
         kcSama : if sd = cari then hasil_all.Add(sk);
-        kcMemuat : hasil_all.Add(sk);
+        kcMemuat,kcRegex : hasil_all.Add(sk);
       end;
 
       { Tambahkan index pos dengan 2 digit, untuk sorting
@@ -883,7 +917,7 @@ begin
           if m < k then hasil_main.Add(sk)
           else hasil_add.Add(sk);
         kcSama : if sd = cari then hasil_main.Add(sk);
-        kcMemuat : if m < k then hasil_main.Add(sk)
+        kcMemuat,kcRegex : if m < k then hasil_main.Add(sk)
           else hasil_add.Add(sk);
       end;
 
@@ -893,8 +927,8 @@ begin
   end;
   DisplayResult;
 
-//  Form.StatusText[0] := PChar(' Ditemukan '+ Int2Ths(hasil_all.Count)+ ' kata (' +
-//    Int2Ths(GetTickCount-start) + 'ms)');
+  Form.StatusText[0] := PChar(' Ditemukan '+ Int2Ths(hasil_all.Count)+ ' kata (' +
+    Int2Ths(GetTickCount-start) + 'ms)');
 end;
 
 procedure TFMain.DisplayResult;
@@ -1343,6 +1377,29 @@ begin
   if (x < 0) or (x>3) then
     x := 0;
   cbKriteria.CurIndex := x;
+end;
+
+function TFMain.CariDgRegex(kata: string; const regex : TRegExpr) : Integer;
+var
+  n,i : Integer;
+  subWord : string;
+begin
+  Result := -1;
+  i  := PosFastcodeRTL('|',kata);
+  if i < 1 then Exit;
+
+  n := 1;
+  while i > 0 do
+  begin
+    subWord := Copy(kata,n,i-n);
+    if regex.Exec(subWord) then
+    begin
+      Result := n+1;
+      Break;
+    end;
+    n := i+1;
+    i := PosEx('|',kata,n);
+  end;
 end;
 
 end.
