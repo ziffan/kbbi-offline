@@ -368,6 +368,7 @@ object FMain: TFMain
       Top = 31
       Width = 32
       Height = 22
+      Hint = 'Buka menu Pengaturan'
       HelpContext = 0
       IgnoreDefault = True
       AnchorLeft = False
