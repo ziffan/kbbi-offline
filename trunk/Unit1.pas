@@ -1,8 +1,16 @@
+{*******************************************************}
+{                                                       }
+{       KBBI Offline                                    }
+{                                                       }
+{       Copyright (C) 2013 ebsoft.web.id                }
+{                                                       }
+{*******************************************************}
+
 { KOL MCK } // Do not remove this line!
 {$DEFINE KOL_MCK}
 
-
 unit Unit1;
+
 
 interface
 
@@ -115,6 +123,7 @@ type
     OldHeight : Integer;
     KriteriaCari : TKriteriaCari;
     function GetListBold(src : String) : String;
+    
     function GetListItalic(src : string) : string;
     //function CariKata(const kata : string) : Boolean;
     procedure CariKata(const kata : string);
@@ -188,7 +197,10 @@ SZ_DEF = 3065456; // 1.3 = 3060838; // 1.2: 3060990; // 2996209;
       * Perbaikan error ketika klik bagian kosong kata utama/tambahan
       ? Hasil didaftar yg kurang akurat, misal Pecundang -> Cundang [1]
       * Penambahan jenis-kata dari panduan singkatan
-      + Penambahan (database) kata oleh pengguna
+      * Perbaikan setting 'Tepat sama' di pencarian arti
+      * Perbaikan hasil pencarian arti yang sebelumnya huruf kecil semua
+      + Penambahan informasi tooltip menu/button
+      + ?Penambahan (database) kata oleh pengguna
       + Menu informasi singkatan yg lebih informatif
       + Regular Expression searching
 
@@ -340,7 +352,6 @@ end;
 
 { Mencari daftar kata yang akan di format Italic di RichEdit
   Hasilnya adalah string 'src' yang sudah dihilangkan # dan ¡ }
-
 function TFMain.GetListItalic(src : string) : string;
   function getTotal: Integer;
   var
@@ -443,6 +454,14 @@ begin
   cbKriteria.Add('Sama');
   cbKriteria.Add('Memuat');
   cbKriteria.Add('RegEx');
+
+  { Application Hint }
+  btnSetting.Hint.Text := 'Buka menu Pengaturan';
+  btnHelp.Hint.Text := 'Panduan singkat istilah di KBBI Offline';
+  btnAbout.Hint.Text := 'Tentang Program ini';
+  btnCariKata.Hint.Text := 'Mencari kata';
+  btnCariArti.Hint.Text := 'Mencari dari arti kata';
+  chTepatSama.Hint.Text := 'Pencarian tepat sama huruf kecil dan besar';
 
   LblEf1.Left := (form.Width - ( lblef1.Width + lblef2.Width )) div 2;
   LblEf2.Left := LblEf1.Left + LblEf1.Width + 3;
@@ -640,15 +659,11 @@ end;
 
 procedure TFMain.lbKataSelChange(Sender: PObj);
 begin
-//   try
-    if lbKata.CurIndex = -1 then Exit;
-      TampilkanDef(lbKata.Items[lbKata.CurIndex]);
-      lbAdd.CurIndex := -1;
-//   except
-//      on e: exception do
-//         MsgOK('Msg:' +e.Message + #13#10 +
-//            'ClassName:'+e.ClassName);
-//   end;
+  if lbKata.CurIndex = -1 then Exit;    
+  TampilkanDef(lbKata.Items[lbKata.CurIndex]);
+
+  if PnlBottom.Visible and (lbAdd.Count > 0)  then
+    lbAdd.CurIndex := -1;
 end;
 
 procedure TFMain.lbAddSelChange(Sender: PObj);
@@ -730,7 +745,7 @@ end;
 procedure TFMain.btnAboutClick(Sender: PObj);
 begin
   MsgOK('KBBI Offline Versi '+VERSI+#13#10+
-    'Freeware ©2010-2012 by Ebta Setiawan'+#13#10#13#10+
+    'Freeware ©2010-2013 by Ebta Setiawan'+#13#10#13#10+
 
     'KBBI (Kamus Besar Bahasa Indonesia) versi offline dengan mengacu pada data'+#13#10+
     'dari KBBI Daring ( edisi III) diambil dari http://pusatbahasa.diknas.go.id/kbbi/'+#13#10+
@@ -849,7 +864,6 @@ begin
   begin
     s := word_list.ItemPtrs[i];
     if KriteriaCari = kcRegex then
-      //m := 1
       m := CariDgRegex(s,re)
     else
       m := Pos2(pCari,word_list.ItemPtrs[i]);
@@ -864,15 +878,6 @@ begin
         sk := Copy(s,1,k-1);
 
       sd := sk;
-//      if KriteriaCari = kcRegex then
-//      begin
-//        reText := MyStrReplace(s,'|',' ');
-//        if re.Exec(reText) then
-//          m := re.MatchPos[0]
-//        else
-//          Continue;
-//      end;  
-
 
       n := PosFastcodeRTL('^',sk);
       { ubah tanda ^N jika ada }
@@ -930,6 +935,7 @@ begin
   Form.StatusText[0] := PChar(' Ditemukan '+ Int2Ths(hasil_all.Count)+ ' kata (' +
     Int2Ths(GetTickCount-start) + 'ms)');
 end;
+
 
 procedure TFMain.DisplayResult;
 var
@@ -1016,6 +1022,8 @@ begin
     curWord := '';
     Exit;
   end;
+//  else
+//    ShowMessage('Ditemukan:'+ Int2Str(hasil_all.Count));
 
   { Tampilkan definisi kata pertama }
   if lbKata.Count > 0 then
@@ -1249,14 +1257,14 @@ end;
 procedure TFMain.CariArti(const arti: string);
 var
   i,k,m,n : Integer;
-//  start :DWORD;
+  start :DWORD;
   s,sk,sd : KOLstring;
   pCari : PAnsiChar;
 begin
   hasil_main.Clear;
   hasil_add.Clear;
   hasil_all.Clear;
-//  start := GetTickCount;
+  start := GetTickCount;
   //j:=0; {Jumlah hasil_main ditemukan}
   //t:=0; {Jumlah hasil yang PosFastcodeRTL() = 1}
 
@@ -1274,14 +1282,17 @@ begin
   curSearchArti := cari;
   pCari := Pointer(cari);
 
+  if chTepatSama.Checked then
+    pCari := Pointer(arti);
+
   { Mulai Pencarian word_list }
   for i:=0 to word_list.Count-1 do
   begin
     //s := word_list.Items[i];
     if chTepatSama.Checked then
-      m := Pos2(pCari, AnsiLower(word_def.ItemPtrs[i]))
+      m := Pos2(pCari, word_def.ItemPtrs[i])
     else
-      m := Pos2(pCari, word_def.ItemPtrs[i]);
+      m := PosFastcodeRTL(pCari, LowerCase(word_def.Items[i]) );
       
     if m > 0 then
     begin
@@ -1327,10 +1338,11 @@ begin
       //if t = MaxList then Break;
     end;
   end;
+  //ShowMessage('hasil_all:' + Int2Str(hasil_all.Count) + ' hasil_main:'+ Int2Str(hasil_main.Count));
   DisplayResult;
 
-//  Form.StatusText[0] := PChar(' Ditemukan '+ Int2Ths(hasil_all.Count)+ ' kata (' +
-//    Int2Ths(GetTickCount-start) + 'ms)');
+  Form.StatusText[0] := PChar(' Ditemukan '+ Int2Ths(hasil_all.Count)+ ' kata (' +
+    Int2Ths(GetTickCount-start) + 'ms)');
 
 end;
 
