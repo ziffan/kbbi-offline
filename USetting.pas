@@ -27,6 +27,8 @@ type
     btnSimpan: TKOLButton;
     edMaxPage: TKOLEditBox;
     btnBatal: TKOLButton;
+    Label2: TKOLLabel;
+    edRndMax: TKOLEditBox;
     procedure KOLForm1FormCreate(Sender: PObj);
     procedure btnSimpanClick(Sender: PObj);
     procedure btnBatalClick(Sender: PObj);
@@ -63,10 +65,15 @@ begin
 end;
 
 procedure TFSetting.btnSimpanClick(Sender: PObj);
+var
+  i : Integer;
 begin
   setting.Mode := ifmWrite;
   setting.ValueBoolean('Auto Search',chAuto.Checked);
   setting.ValueInteger('MaxPage', Str2Int(edMaxPage.Text));
+  i := Str2Int(edRndMax.Text);
+  if i=0 then i := 20;
+  setting.ValueInteger('RandomCount', i);
   AutoSearch := chAuto.Checked;
   MsgOK('OK, setting telah disimpan');
 end;

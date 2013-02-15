@@ -108,7 +108,7 @@ object FMain: TFMain
       Ctl3D = False
       Color = clBtnFace
       parentColor = False
-      Font.Color = clGray
+      Font.Color = clWindowText
       Font.FontStyle = [fsBold]
       Font.FontHeight = 16
       Font.FontWidth = 0
@@ -364,7 +364,7 @@ object FMain: TFMain
     end
     object btnSetting: TKOLButton
       Tag = 0
-      Left = 491
+      Left = 488
       Top = 31
       Width = 32
       Height = 22
@@ -746,6 +746,63 @@ object FMain: TFMain
       EraseBackground = False
       Localizy = loForm
       Border = 1
+      TextAlign = taCenter
+      VerticalAlign = vaCenter
+      TabStop = True
+      autoSize = False
+      DefaultBtn = False
+      CancelBtn = False
+      windowed = True
+      Flat = False
+      WordWrap = False
+      LikeSpeedButton = False
+    end
+    object btnRandom: TKOLButton
+      Tag = 0
+      Left = 488
+      Top = 56
+      Width = 32
+      Height = 22
+      HelpContext = 0
+      IgnoreDefault = True
+      AnchorLeft = False
+      AnchorTop = False
+      AnchorRight = True
+      AnchorBottom = False
+      AcceptChildren = False
+      MouseTransparent = False
+      TabOrder = 9
+      MinWidth = 0
+      MinHeight = 0
+      MaxWidth = 0
+      MaxHeight = 0
+      PlaceDown = False
+      PlaceRight = False
+      PlaceUnder = False
+      Visible = True
+      Enabled = True
+      DoubleBuffered = False
+      Align = caNone
+      CenterOnParent = False
+      Caption = 'Rnd'
+      Ctl3D = True
+      Color = clBtnFace
+      parentColor = False
+      Font.Color = clWindowText
+      Font.FontStyle = []
+      Font.FontHeight = 14
+      Font.FontWidth = 0
+      Font.FontWeight = 0
+      Font.FontName = 'Arial'
+      Font.FontOrientation = 0
+      Font.FontCharset = 1
+      Font.FontPitch = fpDefault
+      Font.FontQuality = fqDefault
+      parentFont = True
+      OnClick = btnRandomClick
+      EraseBackground = False
+      Localizy = loForm
+      Border = 2
       TextAlign = taCenter
       VerticalAlign = vaCenter
       TabStop = True
@@ -1950,8 +2007,8 @@ object FMain: TFMain
     Localizy = False
     projectName = 'kbbi'
     projectDest = 'kbbi'
-    sourcePath = 'D:\Documents\Ebta\Project\Software\KBBI\src\'
-    outdcuPath = 'D:\Documents\Ebta\Project\Software\KBBI\src\'
+    sourcePath = 'D:\Documents\Ebta\Project\Software\KBBI\kbbi-offline\'
+    outdcuPath = 'D:\Documents\Ebta\Project\Software\KBBI\kbbi-offline\'
     dprResource = True
     protectFiles = True
     showReport = False
@@ -1989,7 +2046,7 @@ object FMain: TFMain
     AllBtnReturnClick = False
     Tabulate = True
     TabulateEx = False
-    UnitSourcePath = 'D:\Documents\Ebta\Project\Software\KBBI\src\'
+    UnitSourcePath = 'D:\Documents\Ebta\Project\Software\KBBI\kbbi-offline\'
     Locked = False
     formUnit = 'Unit1'
     formMain = True
@@ -2042,7 +2099,8 @@ object FMain: TFMain
     statusSizeGrip = True
     Localizy = False
     ShowHint = True
-    KeyPreview = False
+    KeyPreview = True
+    OnKeyUp = KOLForm1KeyUp
     OnResize = KOLForm1Resize
     OnShow = KOLForm1Show
     OnFormCreate = KOLForm1FormCreate
@@ -2053,8 +2111,8 @@ object FMain: TFMain
     Unicode = False
     OverrideScrollbars = False
     AssignTabOrders = False
-    Left = 332
-    Top = 124
+    Left = 176
+    Top = 104
   end
   object Thread1: TKOLThread
     PriorityClass = pcNormal

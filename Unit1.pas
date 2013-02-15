@@ -80,6 +80,7 @@ type
     chTepatSama: TKOLCheckBox;
     btnCariArti: TKOLButton;
     btnHelp: TKOLButton;
+    btnRandom: TKOLButton;
     procedure KOLForm1FormCreate(Sender: PObj);
     procedure ebCariKeyUp(Sender: PControl; var Key: Integer;
       Shift: Cardinal);
@@ -115,6 +116,9 @@ type
     procedure btnCariArtiClick(Sender: PObj);
     procedure btnHelpClick(Sender: PObj);
     procedure cbKriteriaChange(Sender: PObj);
+    procedure btnRandomClick(Sender: PObj);
+    procedure KOLForm1KeyUp(Sender: PControl; var Key: Integer;
+      Shift: Cardinal);
   private
     { Private declarations }
     //REtmp : TKOLRichEdit;
@@ -129,7 +133,7 @@ type
     procedure CariKata(const kata : string);
     procedure CariArti(const arti : string);
 
-    function CariDgRegex(kata: string; const regex : TRegExpr) : Integer;
+    function CariDgRegex(kata: string; const regex : TRegExpr; out lema: String) : Integer;
     // Mencari kata dengan regular expresion
     // kata akan diubah ke StringList dan diparsing mulai idx=0
     // hasil adalah index di kata ke berapa ditemukan mulai dari 1
@@ -165,7 +169,7 @@ const JenisKata : array[1..49] of string =
     'min','n min','jw n','n sas','hid','a ki','far','ark kl','tan','lay',
     'geo','isl','kris','tern','jw','antr','ek','kl');
 
-VERSI = '1.5 alpha';
+VERSI = '1.5';
 SZ_WORD = 344889; // 1.3 = 345215; // 1.2: 345290; // v1.1 : 318201;
 SZ_DEF = 3065456; // 1.3 = 3060838; // 1.2: 3060990; // 2996209;
 
@@ -193,17 +197,19 @@ SZ_DEF = 3065456; // 1.3 = 3060838; // 1.2: 3060990; // 2996209;
 
 
 
-  1.5 TO DO
+  1.5  2013-02-15
       * Perbaikan error ketika klik bagian kosong kata utama/tambahan
-      ? Hasil didaftar yg kurang akurat, misal Pecundang -> Cundang [1]
-      * Penambahan jenis-kata dari panduan singkatan
       * Perbaikan setting 'Tepat sama' di pencarian arti
       * Perbaikan hasil pencarian arti yang sebelumnya huruf kecil semua
       + Penambahan informasi tooltip menu/button
-      + ?Penambahan (database) kata oleh pengguna
       + Menu informasi singkatan yg lebih informatif
       + Regular Expression searching
+      + Menampilkan kata acak (button 'Rnd' atau Ctrl+R)
 
+  1.6 TO DO
+      * ?=Hasil didaftar yg kurang akurat, misal Pecundang -> Cundang [1]
+      * Penambahan jenis-kata dari panduan singkatan
+      + Penambahan (database) kata oleh pengguna
 }
 
 {$IFDEF KOL_MCK}
@@ -443,6 +449,7 @@ begin
   SystemParametersInfo(SPI_SETBEEP, 0, nil, SPIF_SENDWININICHANGE);
   //Enable system beep
   //SystemParametersInfo(SPI_SETBEEP, 1, nil, SPIF_SENDWININICHANGE);
+  Form.KeyPreview := True;
   
   FMain.Form.Caption := 'KBBI Offline '+VERSI;
   LblEf1.Caption := 'Download, update dan informasi terbaru, kunjungi';
@@ -462,6 +469,7 @@ begin
   btnCariKata.Hint.Text := 'Mencari kata';
   btnCariArti.Hint.Text := 'Mencari dari arti kata';
   chTepatSama.Hint.Text := 'Pencarian tepat sama huruf kecil dan besar';
+  btnRandom.Hint.Text := 'Tampilkan kata acak dari KBBI (Ctrl+R)';
 
   LblEf1.Left := (form.Width - ( lblef1.Width + lblef2.Width )) div 2;
   LblEf2.Left := LblEf1.Left + LblEf1.Width + 3;
@@ -508,10 +516,19 @@ begin
   end; 
 end;
 
+{-------------------------------------------------------------------------------
+  Procedure:   TFMain.TampilkanDef
+  Author:      Ebta Setiawan
+  Arguments:   kata :string
+  Description
+    - Menampilkan arti dari parameter kata (kata yang dipilih baik main/add)
+    - Mengatur format font (bold,italic,warna,bck) berbagai kata
+-------------------------------------------------------------------------------}
 procedure TFMain.TampilkanDef(kata :string);
 var
   i,j,k,l,sz : Integer;
-  def,sw,stmp,sl : string;
+  def,sw,stmp,sl,kd : string;
+  sublemaMatch : Boolean;
   //start : DWORD;
 begin
   if kata = curWord then Exit;
@@ -530,6 +547,8 @@ begin
   for i:= 0 to High(aListBold) do
   begin
     sw := aListBold[i].kata;
+    // ambil kata dasarnya
+    if i = 0 then kd := sw;
     l := Length(sw);
     if Str2Int(sw) = 0 then
       j := REdef.RE_WSearchText(sw,False,False,True,k,-1)
@@ -565,8 +584,19 @@ begin
 
 
         { Test apakah Cari ada di sub-lema }
-        if (sl = cari) or
-          ((l>0) and (Pos(cari,sl)>0) )    then
+        if KriteriaCari = kcRegex then
+        begin
+          sl := kd + sl;
+          sl := MyStrReplace(sl,'--','');
+          sl := MyStrReplace(sl,'~','');
+          sublemaMatch := PosFastcodeRTL(kata,sl) > 0;
+        end
+        else
+        begin
+          sublemaMatch := (sl = cari) or ((l>0) and (Pos(cari,sl)>0) );
+        end;
+
+        if sublemaMatch  then
           begin
             REdef.RE_FmtBackColor := clLime;
             REdef.RE_FmtFontColor := clBlack;
@@ -587,16 +617,16 @@ begin
 
       { huruf terakhir-1 adalah integer }
       if Str2Int(sw) = 0 then
-      if Str2Int(sw[l-1])> 0 then
-      begin
-        REdef.SelStart := j + Length(sw) - 3;
-        REdef.SelLength := 3;
-        REdef.RE_FmtBold := false;
-        REdef.RE_FmtFontColor := clBlack;
-        REdef.RE_FmtFontSize := Round(sz*0.8);
-        REdef.RE_FmtFontOffset := 100;
-        REdef.RE_FmtBackColor := clWhite;
-      end;   
+        if Str2Int(sw[l-1])> 0 then
+        begin
+          REdef.SelStart := j + Length(sw) - 3;
+          REdef.SelLength := 3;
+          REdef.RE_FmtBold := false;
+          REdef.RE_FmtFontColor := clBlack;
+          REdef.RE_FmtFontSize := Round(sz*0.8);
+          REdef.RE_FmtFontOffset := 100;
+          REdef.RE_FmtBackColor := clWhite;
+        end;   
     end;
     k := j + Length(sw);
   end;
@@ -747,7 +777,7 @@ begin
   MsgOK('KBBI Offline Versi '+VERSI+#13#10+
     'Freeware ©2010-2013 by Ebta Setiawan'+#13#10#13#10+
 
-    'KBBI (Kamus Besar Bahasa Indonesia) versi offline dengan mengacu pada data'+#13#10+
+    'KBBI (Kamus Besar Bahasa Indonesia) Luar Jaringan (offline) dengan mengacu pada data'+#13#10+
     'dari KBBI Daring ( edisi III) diambil dari http://pusatbahasa.diknas.go.id/kbbi/'+#13#10+
     'Sekarang berganti di http://pusatbahasa.kemdiknas.go.id/kbbi/'+#13#10+
     'Database data merupakan hak cipta PusatBahasa'+#13#10+
@@ -819,6 +849,14 @@ begin
   setting.ValueInteger('left',form.Left);
 end;
 
+{-------------------------------------------------------------------------------
+  Procedure:   TFMain.CariKata
+  Author:      Ebta Setiawan
+  Arguments:   const kata: string
+  Description
+    - Pencarian utama dari kata yang dimasukkan user
+    - Hasil yang ditemukan dimasukkan dalam list main, add & all (main+add)
+-------------------------------------------------------------------------------}
 procedure TFMain.CariKata(const kata: string);
 var
   i,k,m,n : Integer;
@@ -826,6 +864,7 @@ var
   s,sk,sd : KOLstring;
   pCari : PAnsiChar;
   re : TRegExpr;
+  reHasil : string;
 begin
   hasil_main.Clear;
   hasil_add.Clear;
@@ -864,7 +903,7 @@ begin
   begin
     s := word_list.ItemPtrs[i];
     if KriteriaCari = kcRegex then
-      m := CariDgRegex(s,re)
+      m := CariDgRegex(s,re,reHasil)
     else
       m := Pos2(pCari,word_list.ItemPtrs[i]);
       
@@ -891,8 +930,12 @@ begin
         if k > 0 then k := k+2;
       end;
 
-      { tambahkan index word_def }
-      sk := sk + '=' + Int2Str(i);
+      { tambahkan index word_def, khusus regex,
+        tambahkan hasil lema yang ditemukan, bukan kata dasarnya }
+      if KriteriaCari = kcRegex then
+        sk := reHasil + '=' + Int2Str(i)
+      else
+        sk := sk + '=' + Int2Str(i);
 
       { Semua hasil yg ditemukan, kelompokkan berdasar kriteria }
       case KriteriaCari of
@@ -936,7 +979,16 @@ begin
     Int2Ths(GetTickCount-start) + 'ms)');
 end;
 
-
+{-------------------------------------------------------------------------------
+  Procedure:   TFMain.DisplayResult
+  Author:      Ebta Setiawan
+  Arguments:   None
+  Description
+    - Menampilkan daftar kata utama dan tambahan setelah pencarian
+    - Menampilkan paging pertama main & add
+    - Memilih/select hasil kata pertama (index=0) main/add jika ada
+    - menampilkan informasi jika pencarian tidak menemukan data
+-------------------------------------------------------------------------------}
 procedure TFMain.DisplayResult;
 var
   i,j,k,jml : Integer;
@@ -1038,6 +1090,13 @@ begin
   end
 end;
 
+{-------------------------------------------------------------------------------
+  Procedure:   TFMain.DisplayResultMain
+  Author:      Ebta Setiawan
+  Arguments:   page: Integer
+  Description
+    - Mengatur Paging List Main word 
+-------------------------------------------------------------------------------}
 procedure TFMain.DisplayResultMain(page: Integer);
 var
   i,k,awal,akhir : Integer;
@@ -1064,6 +1123,13 @@ begin
   LockWindowUpdate(0);
 end;
 
+{-------------------------------------------------------------------------------
+  Procedure:   TFMain.DisplayResultAdd
+  Author:      Ebta Setiawan
+  Arguments:   page: Integer
+  Description
+    - Mengatur paging list add word
+-------------------------------------------------------------------------------}
 procedure TFMain.DisplayResultAdd(page: Integer);
 var
   i,k,awal,akhir : Integer;
@@ -1391,9 +1457,9 @@ begin
   cbKriteria.CurIndex := x;
 end;
 
-function TFMain.CariDgRegex(kata: string; const regex : TRegExpr) : Integer;
+function TFMain.CariDgRegex(kata: string; const regex : TRegExpr; out lema: string) : Integer;
 var
-  n,i : Integer;
+  n,i,j : Integer;
   subWord : string;
 begin
   Result := -1;
@@ -1404,14 +1470,70 @@ begin
   while i > 0 do
   begin
     subWord := Copy(kata,n,i-n);
+
+    j := PosFastcodeRTL('^',subWord);
+    if j > 0 then
+    begin
+      subWord := Copy(subWord,1,j-1);
+    end;  
+
     if regex.Exec(subWord) then
     begin
       Result := n+1;
+      lema := subWord;
       Break;
     end;
     n := i+1;
     i := PosEx('|',kata,n);
   end;
+end;
+
+procedure TFMain.btnRandomClick(Sender: PObj);
+var
+  i,max,n,k : Integer;
+  word,sk :  string;
+begin
+  Randomize;
+  setting.Mode := ifmRead;
+  max := setting.ValueInteger('RandomCount',20);
+
+  hasil_main.Clear;
+  hasil_add.Clear;
+  hasil_all.Clear;
+  for i:=0 to max-1 do
+  begin
+    n := Random(word_list.Count);
+    word := word_list.Items[n];
+
+    { cari batas terakhir word_list pertama }
+    k := PosFastcodeRTL('|',word);
+    { !!PENTING... semua string harus ada pembatas akhir "|" }
+    { Ambil word_list pertama }
+    if k > 0 then
+      sk := Copy(word,1,k-1);
+
+    k := PosFastcodeRTL('^',sk);
+    { ubah tanda ^N jika ada }
+    if k > 0 then
+    begin
+      StrReplace(sk,'^',' [');
+      sk := sk+']';
+    end;
+
+    { tambahkan index word_def, khusus regex,
+      tambahkan hasil lema yang ditemukan, bukan kata dasarnya }
+    sk := sk + '=' + Int2Str(n);
+    hasil_all.Add(sk);
+    hasil_main.Add('01'+sk);
+  end;
+  DisplayResult;
+end;
+
+procedure TFMain.KOLForm1KeyUp(Sender: PControl; var Key: Integer;
+  Shift: Cardinal);
+begin
+  if (Shift=8) and (Key = Ord('R')) then
+    btnRandom.Click;
 end;
 
 end.
