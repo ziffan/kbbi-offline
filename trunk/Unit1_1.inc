@@ -17,7 +17,9 @@ begin
     Result.Form.Border := 0;
     Result.Form.MinWidth := 580;
     Result.Form.MinHeight := 400;
+    Result.Form.KeyPreview := TRUE;
       Result.Form.OnClose := Result.KOLForm1Close;
+      Result.Form.OnKeyUp := Result.KOLForm1KeyUp;
       Result.Form.OnResize := Result.KOLForm1Resize;
       Result.Form.OnShow := Result.KOLForm1Show;
 
@@ -30,7 +32,6 @@ begin
       Result.LabelEffect1 := NewLabelEffect( Result.PanelTop, 'Kamus Besar Bahasa Indonesia', 1 ).SetPosition( 8, 8 ).AutoSize( TRUE ).SetBorder( 2);
       Result.LabelEffect1.Ctl3D := False;
       Result.LabelEffect1.HasBorder := FALSE;
-    Result.LabelEffect1.Font.Color := TColor(clGray);
     Result.LabelEffect1.Font.FontStyle := [ fsBold ];
     Result.LabelEffect1.Font.FontHeight := 16;
     Result.LabelEffect1.TextAlign := KOL.taLeft;
@@ -39,11 +40,6 @@ begin
       Result.LabelEffect1.Color2 := TColor(clWhite);
       Result.cbKriteria := NewComboBox( Result.PanelTop, [ coReadOnly, coNoIntegralHeight ] ).SetPosition( 76, 32 ).SetSize( 77, 0 ).SetBorder( 2);
     Result.cbKriteria.Color := TColor(clWindow);
-      Result.cbKriteria.Items[ 0 ] := 'Diawali';
-      Result.cbKriteria.Items[ 1 ] := 'Diakhiri';
-      Result.cbKriteria.Items[ 2 ] := 'Sama';
-      Result.cbKriteria.Items[ 3 ] := 'Memuat';
-      Result.cbKriteria.CurIndex := 0;
       Result.ebCari := NewEditBox( Result.PanelTop, [  ] ).SetPosition( 160, 32 ).SetSize( 256, 0 ).SetBorder( 2);
     Result.ebCari.Font.FontHeight := 16;
       Result.btnCariKata := NewButton( Result.PanelTop, 'Cari' ).SetPosition( 417, 31 ).SetSize( 53, 0 ).SetBorder( 2);
@@ -51,8 +47,11 @@ begin
       Result.ebKalimat := NewEditBox( Result.PanelTop, [  ] ).SetPosition( 160, 59 ).SetSize( 256, 0 ).SetBorder( 2);
     Result.ebKalimat.Font.FontHeight := 16;
       Result.btnCariArti := NewButton( Result.PanelTop, 'Cari' ).SetPosition( 417, 59 ).SetSize( 53, 0 ).SetBorder( 2);
-      Result.btnSetting := NewButton( Result.PanelTop, '...' ).SetPosition( 491, 31 ).SetSize( 32, 0 ).SetBorder( 2);
+      Result.btnSetting := NewButton( Result.PanelTop, '...' ).SetPosition( 488, 31 ).SetSize( 32, 0 ).SetBorder( 2);
     Result.btnSetting.Font.FontStyle := [ fsBold ];
+      {$IFDEF USE_MHTOOLTIP}
+      Result.btnSetting.Hint.Text := 'Buka menu Pengaturan';
+      {$ENDIF USE_MHTOOLTIP}
       Result.btnAbout := NewButton( Result.PanelTop, '!' ).SetPosition( 524, 31 ).SetSize( 32, 0 ).SetBorder( 1);
     Result.btnAbout.Font.FontHeight := 16;
       {$IFDEF USE_MHTOOLTIP}
@@ -63,6 +62,7 @@ begin
       {$IFDEF USE_MHTOOLTIP}
       Result.btnHelp.Hint.Text := 'Tentang Program';
       {$ENDIF USE_MHTOOLTIP}
+      Result.btnRandom := NewButton( Result.PanelTop, 'Rnd' ).SetPosition( 488, 56 ).SetSize( 32, 0 ).SetBorder( 2);
     Result.Panel1 := NewPanel( Result.Form, esNone ).SetAlign ( caBottom ).SetSize( 0, 20 ).SetBorder( 0);
       Result.LblEf1 := NewLabelEffect( Result.Panel1, 'http://ebsoft.web.id', 1 ).SetPosition( 5, 2 ).AutoSize( TRUE ).SetBorder( 2);
       Result.LblEf1.Ctl3D := False;
@@ -142,6 +142,8 @@ begin
       Result.btnCariArti.OnClick := Result.btnCariArtiClick;
       Result.btnHelp.OnClick := Result.btnHelpClick;
     Result.btnHelp.Anchor(FALSE, FALSE, TRUE, FALSE);
+      Result.btnRandom.OnClick := Result.btnRandomClick;
+    Result.btnRandom.Anchor(FALSE, FALSE, TRUE, FALSE);
     Result.PanelMain.Anchor(TRUE, TRUE, TRUE, TRUE);
     Result.REdef.Color := TColor(clWindow);
       Result.REdef.OnKeyUp := Result.REdefKeyUp;

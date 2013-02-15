@@ -95,7 +95,7 @@ object FHelp: TFHelp
     AllBtnReturnClick = False
     Tabulate = False
     TabulateEx = False
-    UnitSourcePath = 'D:\Documents\Ebta\Project\Software\KBBI\src\'
+    UnitSourcePath = 'D:\Documents\Ebta\Project\Software\KBBI\kbbi-offline\'
     Locked = False
     formUnit = 'UHelp'
     formMain = False
@@ -149,6 +149,7 @@ object FHelp: TFHelp
     Localizy = False
     ShowHint = True
     KeyPreview = False
+    OnResize = KOLForm1Resize
     OnFormCreate = KOLForm1FormCreate
     EraseBackground = False
     supportMnemonics = False
@@ -157,7 +158,7 @@ object FHelp: TFHelp
     Unicode = False
     OverrideScrollbars = False
     AssignTabOrders = False
-    Left = 312
-    Top = 20
+    Left = 24
+    Top = 16
   end
 end

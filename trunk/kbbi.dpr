@@ -2,7 +2,7 @@
 program kbbi;
 
 uses
-  KOL,
+KOL,
   Unit1 in 'Unit1.pas' {FMain},
   DIUclStreams in 'ucl\DIUclStreams.pas',
   UPosX in 'UPosX.pas',

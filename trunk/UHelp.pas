@@ -24,6 +24,7 @@ type
     KOLForm1: TKOLForm;
     REHelp: TKOLRichEdit;
     procedure KOLForm1FormCreate(Sender: PObj);
+    procedure KOLForm1Resize(Sender: PObj);
   private
     { Private declarations }
   public
@@ -38,6 +39,9 @@ procedure NewFHelp( var Result: PFHelp; AParent: PControl );
 {$ENDIF}
 
 implementation
+
+uses
+  Unit1;
 
 {$IF Defined(KOL_MCK)}{$ELSE}{$R *.DFM}{$IFEND}
 
@@ -60,7 +64,21 @@ begin
   Resource2Stream(P,HInstance,'kbbiacronim',RT_RCDATA);
   P.position :=0;
   REHelp.RE_LoadFromStream(P,P.Size,reRTF,false);
-  P.free
+  P.free;
+end;
+
+procedure TFHelp.KOLForm1Resize(Sender: PObj);
+var
+  xy : TPoint;
+begin                                                                                
+  setting.Mode := ifmWrite;
+  setting.ValueInteger('fhelp-width',form.Width);
+  setting.ValueInteger('fhelp-height',form.Height);
+  xy.X := form.Top;
+  xy.Y := form.Left;
+  //ScreenToClient(applet.Handle,xy);
+  setting.ValueInteger('fhelp-top',xy.X);
+  setting.ValueInteger('fhelp-left',xy.Y);
 end;
 
 end.
