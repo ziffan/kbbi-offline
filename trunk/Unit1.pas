@@ -1452,7 +1452,7 @@ begin
   AutoSearch := setting.ValueBoolean('Auto Search',false);
 
   x := setting.ValueInteger('Kriteria',0);
-  if (x < 0) or (x>3) then
+  if (x < 0) or (x>4) then
     x := 0;
   cbKriteria.CurIndex := x;
 end;
