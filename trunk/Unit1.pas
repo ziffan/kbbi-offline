@@ -169,7 +169,7 @@ const JenisKata : array[1..49] of string =
     'min','n min','jw n','n sas','hid','a ki','far','ark kl','tan','lay',
     'geo','isl','kris','tern','jw','antr','ek','kl');
 
-VERSI = '1.5';
+VERSI = '1.5.1';
 SZ_WORD = 344889; // 1.3 = 345215; // 1.2: 345290; // v1.1 : 318201;
 SZ_DEF = 3065456; // 1.3 = 3060838; // 1.2: 3060990; // 2996209;
 
@@ -445,10 +445,6 @@ procedure TFMain.KOLForm1FormCreate(Sender: PObj);
 var
   r : TREct;
 begin
-  //Disable system beep
-  SystemParametersInfo(SPI_SETBEEP, 0, nil, SPIF_SENDWININICHANGE);
-  //Enable system beep
-  //SystemParametersInfo(SPI_SETBEEP, 1, nil, SPIF_SENDWININICHANGE);
   Form.KeyPreview := True;
   
   FMain.Form.Caption := 'KBBI Offline '+VERSI;
@@ -513,7 +509,13 @@ begin
           ReadSettings;
         end;
     end;
-  end; 
+  end;
+
+  if setting.ValueBoolean('NoSound',True) then
+    //Disable system beep
+    SystemParametersInfo(SPI_SETBEEP, 0, nil, SPIF_SENDWININICHANGE);
+    //Enable system beep
+    //SystemParametersInfo(SPI_SETBEEP, 1, nil, SPIF_SENDWININICHANGE);
 end;
 
 {-------------------------------------------------------------------------------
@@ -706,12 +708,8 @@ end;
 
 procedure TFMain.KOLForm1Close(Sender: PObj; var Accept: Boolean);
 begin
+  SystemParametersInfo(SPI_SETBEEP, 1, nil, SPIF_SENDWININICHANGE);
   SaveFormPosition;
-//  Free_And_Nil(word_list);
-//  Free_And_Nil(hasil_main);
-//  Free_And_Nil(hasil_all);
-//  Free_And_Nil(word_def);
-//  Free_And_Nil(hasil_add);
   word_list.Free;
   word_def.Free;
   hasil_all.Free;

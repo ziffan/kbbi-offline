@@ -29,6 +29,7 @@ type
     btnBatal: TKOLButton;
     Label2: TKOLLabel;
     edRndMax: TKOLEditBox;
+    chSound: TKOLCheckBox;
     procedure KOLForm1FormCreate(Sender: PObj);
     procedure btnSimpanClick(Sender: PObj);
     procedure btnBatalClick(Sender: PObj);
@@ -62,6 +63,7 @@ begin
    setting.Mode := ifmRead;
    chAuto.Checked := setting.ValueBoolean('Auto Search',False);
    edMaxPage.Text := Int2Str(setting.ValueInteger('MaxPage', 300 ));
+   chSound.Checked := setting.ValueBoolean('NoSound',True);
 end;
 
 procedure TFSetting.btnSimpanClick(Sender: PObj);
@@ -70,12 +72,14 @@ var
 begin
   setting.Mode := ifmWrite;
   setting.ValueBoolean('Auto Search',chAuto.Checked);
+  setting.ValueBoolean('NoSound',chSound.Checked);
   setting.ValueInteger('MaxPage', Str2Int(edMaxPage.Text));
   i := Str2Int(edRndMax.Text);
   if i=0 then i := 20;
   setting.ValueInteger('RandomCount', i);
   AutoSearch := chAuto.Checked;
   MsgOK('OK, setting telah disimpan');
+  Form.Close;
 end;
 
 procedure TFSetting.btnBatalClick(Sender: PObj);
