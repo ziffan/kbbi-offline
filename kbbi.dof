@@ -114,8 +114,8 @@ IncludeVerInfo=1
 AutoIncBuild=0
 MajorVer=1
 MinorVer=5
-Release=5
-Build=72
+Release=6
+Build=73
 Debug=0
 PreRelease=0
 Special=0
@@ -126,13 +126,13 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=ebsoft
 FileDescription=Kamus Besar Bahasa Indonesia
-FileVersion=1.5.5.72
+FileVersion=1.5.6.73
 InternalName=KBBI
 LegalCopyright=Ebta Setiawan
 LegalTrademarks=
 OriginalFilename=KBBI
 ProductName=KBBI Offline
-ProductVersion=1.5.0.0
+ProductVersion=1.5.1.0
 Comments=http://ebsoft.web.id
 [HistoryLists\hlConditionals]
 Count=13

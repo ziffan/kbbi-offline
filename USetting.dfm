@@ -1,8 +1,8 @@
 object FSetting: TFSetting
-  Left = 548
-  Top = 310
-  Width = 289
-  Height = 167
+  Left = 550
+  Top = 284
+  Width = 339
+  Height = 186
   HorzScrollBar.Visible = False
   VertScrollBar.Visible = False
   Caption = 'FSetting'
@@ -129,8 +129,8 @@ object FSetting: TFSetting
   end
   object btnSimpan: TKOLButton
     Tag = 0
-    Left = 71
-    Top = 92
+    Left = 94
+    Top = 112
     Width = 64
     Height = 25
     HelpContext = 0
@@ -242,8 +242,8 @@ object FSetting: TFSetting
   end
   object btnBatal: TKOLButton
     Tag = 0
-    Left = 139
-    Top = 92
+    Left = 166
+    Top = 112
     Width = 64
     Height = 25
     HelpContext = 0
@@ -407,6 +407,63 @@ object FSetting: TFSetting
     windowed = True
     Unicode = False
   end
+  object chSound: TKOLCheckBox
+    Tag = 0
+    Left = 12
+    Top = 84
+    Width = 296
+    Height = 20
+    HelpContext = 0
+    IgnoreDefault = False
+    AnchorLeft = False
+    AnchorTop = False
+    AnchorRight = False
+    AnchorBottom = False
+    AcceptChildren = False
+    MouseTransparent = False
+    TabOrder = 3
+    MinWidth = 0
+    MinHeight = 0
+    MaxWidth = 0
+    MaxHeight = 0
+    PlaceDown = False
+    PlaceRight = False
+    PlaceUnder = False
+    Visible = True
+    Enabled = True
+    DoubleBuffered = False
+    Align = caNone
+    CenterOnParent = False
+    Caption = 'Matikan suara (notifikasi) ketika menekan Enter'
+    Ctl3D = True
+    Color = clBtnFace
+    parentColor = True
+    Font.Color = clWindowText
+    Font.FontStyle = []
+    Font.FontHeight = 16
+    Font.FontWidth = 0
+    Font.FontWeight = 0
+    Font.FontName = 'Arial'
+    Font.FontOrientation = 0
+    Font.FontCharset = 1
+    Font.FontPitch = fpDefault
+    Font.FontQuality = fqDefault
+    parentFont = True
+    EraseBackground = False
+    Localizy = loForm
+    Transparent = False
+    Checked = False
+    TabStop = True
+    autoSize = True
+    HasBorder = False
+    Brush.Color = clBtnFace
+    Brush.BrushStyle = bsSolid
+    Auto3State = False
+    windowed = True
+    WordWrap = False
+    Border = 2
+    LikeSpeedButton = False
+  end
   object KOLForm1: TKOLForm
     Tag = 0
     ForceIcon16x16 = False
@@ -477,7 +534,7 @@ object FSetting: TFSetting
     Unicode = False
     OverrideScrollbars = False
     AssignTabOrders = False
-    Left = 16
-    Top = 68
+    Left = 40
+    Top = 20
   end
 end
